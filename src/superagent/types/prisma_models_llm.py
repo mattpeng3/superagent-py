@@ -9,6 +9,7 @@ import pydantic
 
 from ..core.datetime_utils import serialize_datetime
 from .llm_provider import LlmProvider
+from pydantic import ConfigDict
 
 
 class PrismaModelsLlm(pydantic.BaseModel):
@@ -19,8 +20,8 @@ class PrismaModelsLlm(pydantic.BaseModel):
     id: str
     provider: LlmProvider
     api_key: str = pydantic.Field(alias="apiKey")
-    options: typing.Optional[str]
-    agents: typing.Optional[typing.List[PrismaModelsAgentLlm]]
+    options: typing.Optional[str] = None
+    agents: typing.Optional[typing.List[PrismaModelsAgentLlm]] = None
     created_at: dt.datetime = pydantic.Field(alias="createdAt")
     updated_at: dt.datetime = pydantic.Field(alias="updatedAt")
     api_user_id: str = pydantic.Field(alias="apiUserId")
@@ -33,12 +34,9 @@ class PrismaModelsLlm(pydantic.BaseModel):
     def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
         return super().dict(**kwargs_with_defaults)
-
-    class Config:
-        frozen = True
-        smart_union = True
-        allow_population_by_field_name = True
-        json_encoders = {dt.datetime: serialize_datetime}
+    # TODO[pydantic]: The following keys were removed: `smart_union`, `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(frozen=True, smart_union=True, populate_by_name=True, json_encoders={dt.datetime: serialize_datetime})
 
 
 from .prisma_models_agent_llm import PrismaModelsAgentLlm  # noqa: E402

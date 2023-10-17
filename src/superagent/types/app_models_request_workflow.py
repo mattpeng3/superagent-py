@@ -6,6 +6,7 @@ import typing
 import pydantic
 
 from ..core.datetime_utils import serialize_datetime
+from pydantic import ConfigDict
 
 
 class AppModelsRequestWorkflow(pydantic.BaseModel):
@@ -19,8 +20,6 @@ class AppModelsRequestWorkflow(pydantic.BaseModel):
     def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
         return super().dict(**kwargs_with_defaults)
-
-    class Config:
-        frozen = True
-        smart_union = True
-        json_encoders = {dt.datetime: serialize_datetime}
+    # TODO[pydantic]: The following keys were removed: `smart_union`, `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(frozen=True, smart_union=True, json_encoders={dt.datetime: serialize_datetime})

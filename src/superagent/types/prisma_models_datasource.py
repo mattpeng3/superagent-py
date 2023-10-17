@@ -10,6 +10,7 @@ import pydantic
 from ..core.datetime_utils import serialize_datetime
 from .datasource_status import DatasourceStatus
 from .datasource_type import DatasourceType
+from pydantic import ConfigDict
 
 
 class PrismaModelsDatasource(pydantic.BaseModel):
@@ -19,17 +20,17 @@ class PrismaModelsDatasource(pydantic.BaseModel):
 
     id: str
     name: str
-    content: typing.Optional[str]
-    description: typing.Optional[str]
-    url: typing.Optional[str]
+    content: typing.Optional[str] = None
+    description: typing.Optional[str] = None
+    url: typing.Optional[str] = None
     type: DatasourceType
     api_user_id: str = pydantic.Field(alias="apiUserId")
     api_user: typing.Optional[PrismaModelsApiUser] = pydantic.Field(alias="apiUser")
     created_at: dt.datetime = pydantic.Field(alias="createdAt")
     updated_at: dt.datetime = pydantic.Field(alias="updatedAt")
-    metadata: typing.Optional[str]
+    metadata: typing.Optional[str] = None
     status: DatasourceStatus
-    datasources: typing.Optional[typing.List[PrismaModelsAgentDatasource]]
+    datasources: typing.Optional[typing.List[PrismaModelsAgentDatasource]] = None
 
     def json(self, **kwargs: typing.Any) -> str:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
@@ -38,12 +39,9 @@ class PrismaModelsDatasource(pydantic.BaseModel):
     def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
         return super().dict(**kwargs_with_defaults)
-
-    class Config:
-        frozen = True
-        smart_union = True
-        allow_population_by_field_name = True
-        json_encoders = {dt.datetime: serialize_datetime}
+    # TODO[pydantic]: The following keys were removed: `smart_union`, `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(frozen=True, smart_union=True, populate_by_name=True, json_encoders={dt.datetime: serialize_datetime})
 
 
 from .prisma_models_agent_datasource import PrismaModelsAgentDatasource  # noqa: E402

@@ -6,16 +6,17 @@ import typing
 import pydantic
 
 from ..core.datetime_utils import serialize_datetime
+from pydantic import ConfigDict
 
 
 class AppModelsRequestAgent(pydantic.BaseModel):
     is_active: typing.Optional[bool] = pydantic.Field(alias="isActive")
     name: str
     initial_message: typing.Optional[str] = pydantic.Field(alias="initialMessage")
-    prompt: typing.Optional[str]
+    prompt: typing.Optional[str] = None
     llm_model: str = pydantic.Field(alias="llmModel")
     description: str
-    avatar: typing.Optional[str]
+    avatar: typing.Optional[str] = None
 
     def json(self, **kwargs: typing.Any) -> str:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
@@ -24,9 +25,6 @@ class AppModelsRequestAgent(pydantic.BaseModel):
     def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
         return super().dict(**kwargs_with_defaults)
-
-    class Config:
-        frozen = True
-        smart_union = True
-        allow_population_by_field_name = True
-        json_encoders = {dt.datetime: serialize_datetime}
+    # TODO[pydantic]: The following keys were removed: `smart_union`, `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(frozen=True, smart_union=True, populate_by_name=True, json_encoders={dt.datetime: serialize_datetime})

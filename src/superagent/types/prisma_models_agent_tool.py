@@ -8,6 +8,7 @@ import typing
 import pydantic
 
 from ..core.datetime_utils import serialize_datetime
+from pydantic import ConfigDict
 
 
 class PrismaModelsAgentTool(pydantic.BaseModel):
@@ -17,8 +18,8 @@ class PrismaModelsAgentTool(pydantic.BaseModel):
 
     agent_id: str = pydantic.Field(alias="agentId")
     tool_id: str = pydantic.Field(alias="toolId")
-    agent: typing.Optional[PrismaModelsAgent]
-    tool: typing.Optional[PrismaModelsTool]
+    agent: typing.Optional[PrismaModelsAgent] = None
+    tool: typing.Optional[PrismaModelsTool] = None
     created_at: dt.datetime = pydantic.Field(alias="createdAt")
     updated_at: dt.datetime = pydantic.Field(alias="updatedAt")
 
@@ -29,12 +30,9 @@ class PrismaModelsAgentTool(pydantic.BaseModel):
     def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
         return super().dict(**kwargs_with_defaults)
-
-    class Config:
-        frozen = True
-        smart_union = True
-        allow_population_by_field_name = True
-        json_encoders = {dt.datetime: serialize_datetime}
+    # TODO[pydantic]: The following keys were removed: `smart_union`, `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(frozen=True, smart_union=True, populate_by_name=True, json_encoders={dt.datetime: serialize_datetime})
 
 
 from .prisma_models_agent import PrismaModelsAgent  # noqa: E402

@@ -6,12 +6,13 @@ import typing
 import pydantic
 
 from ..core.datetime_utils import serialize_datetime
+from pydantic import ConfigDict
 
 
 class AppModelsRequestLlm(pydantic.BaseModel):
     provider: str
     api_key: str = pydantic.Field(alias="apiKey")
-    options: typing.Optional[typing.Dict[str, typing.Any]]
+    options: typing.Optional[typing.Dict[str, typing.Any]] = None
 
     def json(self, **kwargs: typing.Any) -> str:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
@@ -20,9 +21,6 @@ class AppModelsRequestLlm(pydantic.BaseModel):
     def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
         return super().dict(**kwargs_with_defaults)
-
-    class Config:
-        frozen = True
-        smart_union = True
-        allow_population_by_field_name = True
-        json_encoders = {dt.datetime: serialize_datetime}
+    # TODO[pydantic]: The following keys were removed: `smart_union`, `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(frozen=True, smart_union=True, populate_by_name=True, json_encoders={dt.datetime: serialize_datetime})

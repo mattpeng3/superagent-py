@@ -8,6 +8,7 @@ import typing
 import pydantic
 
 from ..core.datetime_utils import serialize_datetime
+from pydantic import ConfigDict
 
 
 class PrismaModelsWorkflow(pydantic.BaseModel):
@@ -17,10 +18,10 @@ class PrismaModelsWorkflow(pydantic.BaseModel):
 
     id: str
     name: str
-    description: typing.Optional[str]
+    description: typing.Optional[str] = None
     created_at: dt.datetime = pydantic.Field(alias="createdAt")
     updated_at: dt.datetime = pydantic.Field(alias="updatedAt")
-    steps: typing.Optional[typing.List[PrismaModelsWorkflowStep]]
+    steps: typing.Optional[typing.List[PrismaModelsWorkflowStep]] = None
     api_user_id: str = pydantic.Field(alias="apiUserId")
     api_user: typing.Optional[PrismaModelsApiUser] = pydantic.Field(alias="apiUser")
 
@@ -31,12 +32,9 @@ class PrismaModelsWorkflow(pydantic.BaseModel):
     def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
         return super().dict(**kwargs_with_defaults)
-
-    class Config:
-        frozen = True
-        smart_union = True
-        allow_population_by_field_name = True
-        json_encoders = {dt.datetime: serialize_datetime}
+    # TODO[pydantic]: The following keys were removed: `smart_union`, `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(frozen=True, smart_union=True, populate_by_name=True, json_encoders={dt.datetime: serialize_datetime})
 
 
 from .prisma_models_api_user import PrismaModelsApiUser  # noqa: E402

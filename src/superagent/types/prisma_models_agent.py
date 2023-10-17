@@ -9,6 +9,7 @@ import pydantic
 
 from ..core.datetime_utils import serialize_datetime
 from .llm_model import LlmModel
+from pydantic import ConfigDict
 
 
 class PrismaModelsAgent(pydantic.BaseModel):
@@ -18,19 +19,19 @@ class PrismaModelsAgent(pydantic.BaseModel):
 
     id: str
     name: str
-    avatar: typing.Optional[str]
+    avatar: typing.Optional[str] = None
     initial_message: typing.Optional[str] = pydantic.Field(alias="initialMessage")
     description: str
     is_active: bool = pydantic.Field(alias="isActive")
     created_at: dt.datetime = pydantic.Field(alias="createdAt")
     updated_at: dt.datetime = pydantic.Field(alias="updatedAt")
-    llms: typing.Optional[typing.List[PrismaModelsAgentLlm]]
+    llms: typing.Optional[typing.List[PrismaModelsAgentLlm]] = None
     llm_model: LlmModel = pydantic.Field(alias="llmModel")
-    prompt: typing.Optional[str]
+    prompt: typing.Optional[str] = None
     api_user_id: str = pydantic.Field(alias="apiUserId")
     api_user: typing.Optional[PrismaModelsApiUser] = pydantic.Field(alias="apiUser")
-    datasources: typing.Optional[typing.List[PrismaModelsAgentDatasource]]
-    tools: typing.Optional[typing.List[PrismaModelsAgentTool]]
+    datasources: typing.Optional[typing.List[PrismaModelsAgentDatasource]] = None
+    tools: typing.Optional[typing.List[PrismaModelsAgentTool]] = None
     workflow_steps: typing.Optional[typing.List[PrismaModelsWorkflowStep]] = pydantic.Field(alias="workflowSteps")
 
     def json(self, **kwargs: typing.Any) -> str:
@@ -40,12 +41,9 @@ class PrismaModelsAgent(pydantic.BaseModel):
     def dict(self, **kwargs: typing.Any) -> typing.Dict[str, typing.Any]:
         kwargs_with_defaults: typing.Any = {"by_alias": True, "exclude_unset": True, **kwargs}
         return super().dict(**kwargs_with_defaults)
-
-    class Config:
-        frozen = True
-        smart_union = True
-        allow_population_by_field_name = True
-        json_encoders = {dt.datetime: serialize_datetime}
+    # TODO[pydantic]: The following keys were removed: `smart_union`, `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(frozen=True, smart_union=True, populate_by_name=True, json_encoders={dt.datetime: serialize_datetime})
 
 
 from .prisma_models_agent_datasource import PrismaModelsAgentDatasource  # noqa: E402
